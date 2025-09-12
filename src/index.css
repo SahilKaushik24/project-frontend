@@ -48,6 +48,7 @@ body {
   font-weight: 700;
   background: linear-gradient(to right, #ff6ec4, #7873f5);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -117,19 +118,6 @@ body {
   animation: pulse 1.5s infinite ease-in-out;
 }
 
-@keyframes pulse {
-  0% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.5;
-  }
-}
-
-/* ERROR */
 .error {
   color: #ff4c4c;
   background-color: rgba(255, 0, 0, 0.1);
@@ -280,4 +268,16 @@ body {
 .btn-delete:hover {
   background-color: #ff4c4c;
   color: white;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+  }
 }
