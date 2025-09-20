@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
 import { useKey } from "./useKey";
 import { useMovies } from "./useMovies";
+import { useNavigate } from "react-router-dom";
 
-const API_URL = "http://localhost:5000"; // backend URL
-const USER_ID = 1; // replace with real logged-in user later
+const API_URL = "http://localhost:5000";
 
 const average = (arr) =>
   arr.length ? arr.reduce((acc, cur) => acc + cur, 0) / arr.length : 0;
@@ -15,11 +15,22 @@ export default function MovieDashboard() {
   const { movies, isLoading, error } = useMovies(query);
   const [watched, setWatched] = useState([]);
 
-  // Fetch watched list from backend
   useEffect(() => {
     async function fetchWatched() {
       try {
-        const res = await fetch(`${API_URL}/watched/${USER_ID}`);
+        const token = localStorage.getItem("token");
+        if (!token) {
+          console.error("No token found. Please login first.");
+          return;
+        }
+
+        const res = await fetch(`${API_URL}/watched`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
         if (!res.ok) throw new Error("Failed to fetch watched movies");
         const data = await res.json();
         setWatched(data);
@@ -27,6 +38,7 @@ export default function MovieDashboard() {
         console.error("Failed to fetch watched movies", err);
       }
     }
+
     fetchWatched();
   }, []);
 
@@ -38,14 +50,17 @@ export default function MovieDashboard() {
     setSelectedId(null);
   }
 
-  // Add watched movie
   async function handleAddWatched({ id, userRating }) {
     try {
+      const token = localStorage.getItem("token");
+
       const res = await fetch(`${API_URL}/watched`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
-          userId: USER_ID,
           movieId: id,
           rating: userRating,
         }),
@@ -54,18 +69,21 @@ export default function MovieDashboard() {
       if (!res.ok) throw new Error("Failed to save watched movie");
       const saved = await res.json();
 
-      // saved now already has movie details
       setWatched((prev) => [...prev, saved]);
     } catch (err) {
       console.error("Error adding watched movie:", err);
     }
   }
 
-  // Delete watched movie (soft delete by Watched.id)
   async function handleDeleteWatched(watchedId) {
     try {
+      const token = localStorage.getItem("token");
+
       const res = await fetch(`${API_URL}/watched/${watchedId}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!res.ok) throw new Error("Failed to delete watched movie");
@@ -81,7 +99,7 @@ export default function MovieDashboard() {
     <>
       <NavBar>
         <Search query={query} setQuery={setQuery} />
-        <NumResults movies={movies} />
+        <LogoutButton />
       </NavBar>
 
       <Main>
@@ -167,11 +185,18 @@ function Search({ query, setQuery }) {
   );
 }
 
-function NumResults({ movies }) {
+function LogoutButton() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
   return (
-    <p className="num-results">
-      Found <strong>{movies.length}</strong> results
-    </p>
+    <button onClick={handleLogout} className="logout-btn">
+      Logout
+    </button>
   );
 }
 

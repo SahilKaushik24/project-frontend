@@ -26,12 +26,7 @@ export default function SignupPage() {
         throw new Error(data.error || "Signup failed");
       }
 
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        navigate("/dashboard");
-      } else {
-        navigate("/login");
-      }
+      navigate("/login");
     } catch (err) {
       setError(err.message);
     }
