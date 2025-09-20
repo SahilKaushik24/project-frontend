@@ -260,7 +260,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
     releaseYear,
     poster,
     rating,
-    description,
+    overview,
     director,
     movieGenres,
   } = movie;
@@ -330,7 +330,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
               )}
             </div>
             <p>
-              <em>{description}</em>
+              <em>{overview}</em>
             </p>
             <p>Directed by {director}</p>
           </section>
