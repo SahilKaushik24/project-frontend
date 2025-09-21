@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 
-export function useMovies(query) {
+export function useMovies(query, page = 1, limit = 20) {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -13,9 +14,9 @@ export function useMovies(query) {
         setIsLoading(true);
         setError("");
 
-        let url = "http://localhost:5000/movies";
+        let url = `http://localhost:5000/movies?page=${page}&limit=${limit}`;
         if (query) {
-          url += `?title=${encodeURIComponent(query)}`;
+          url += `&title=${encodeURIComponent(query)}`;
         }
 
         const res = await fetch(url, { signal: controller.signal });
@@ -23,7 +24,7 @@ export function useMovies(query) {
 
         const data = await res.json();
 
-        const mapped = data.map((movie) => ({
+        const mapped = (data.movies || []).map((movie) => ({
           id: movie.id,
           title: movie.title,
           releaseYear: movie.releaseYear,
@@ -34,6 +35,7 @@ export function useMovies(query) {
         }));
 
         setMovies(mapped);
+        setTotalPages(data.totalPages || 1);
       } catch (err) {
         if (err.name !== "AbortError") {
           setError(err.message);
@@ -45,7 +47,7 @@ export function useMovies(query) {
 
     fetchMovies();
     return () => controller.abort();
-  }, [query]);
+  }, [query, page, limit]);
 
-  return { movies, isLoading, error };
+  return { movies, isLoading, error, totalPages };
 }
