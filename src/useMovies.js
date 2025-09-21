@@ -13,33 +13,17 @@ export function useMovies(query, page = 1, limit = 20) {
       try {
         setIsLoading(true);
         setError("");
-
         let url = `http://localhost:5000/movies?page=${page}&limit=${limit}`;
-        if (query) {
-          url += `&title=${encodeURIComponent(query)}`;
-        }
+        if (query) url += `&title=${encodeURIComponent(query)}`;
 
         const res = await fetch(url, { signal: controller.signal });
         if (!res.ok) throw new Error("Failed to fetch movies");
 
         const data = await res.json();
-
-        const mapped = (data.movies || []).map((movie) => ({
-          id: movie.id,
-          title: movie.title,
-          releaseYear: movie.releaseYear,
-          director: movie.director,
-          rating: movie.rating ?? null,
-          genres: movie.movieGenres?.map((g) => g.genre.name) || [],
-          poster: movie.poster || "/placeholder.png",
-        }));
-
-        setMovies(mapped);
+        setMovies(data.movies || []);
         setTotalPages(data.totalPages || 1);
       } catch (err) {
-        if (err.name !== "AbortError") {
-          setError(err.message);
-        }
+        if (err.name !== "AbortError") setError(err.message);
       } finally {
         setIsLoading(false);
       }

@@ -19,10 +19,7 @@ export default function MovieDashboard() {
     async function fetchWatched() {
       try {
         const token = localStorage.getItem("token");
-        if (!token) {
-          console.error("No token found. Please login first.");
-          return;
-        }
+        if (!token) return console.error("No token found. Please login first.");
 
         const res = await fetch(`${API_URL}/watched`, {
           headers: {
@@ -38,7 +35,6 @@ export default function MovieDashboard() {
         console.error("Failed to fetch watched movies", err);
       }
     }
-
     fetchWatched();
   }, []);
 
@@ -60,15 +56,11 @@ export default function MovieDashboard() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          movieId: id,
-          rating: userRating,
-        }),
+        body: JSON.stringify({ movieId: id, rating: userRating }),
       });
 
       if (!res.ok) throw new Error("Failed to save watched movie");
       const saved = await res.json();
-
       setWatched((prev) => [...prev, saved]);
     } catch (err) {
       console.error("Error adding watched movie:", err);
@@ -81,9 +73,7 @@ export default function MovieDashboard() {
 
       const res = await fetch(`${API_URL}/watched/${watchedId}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!res.ok) throw new Error("Failed to delete watched movie");
@@ -187,12 +177,10 @@ function Search({ query, setQuery }) {
 
 function LogoutButton() {
   const navigate = useNavigate();
-
   const handleLogout = () => {
     localStorage.removeItem("user");
     navigate("/login");
   };
-
   return (
     <button onClick={handleLogout} className="logout-btn">
       Logout
@@ -206,7 +194,6 @@ function Main({ children }) {
 
 function Box({ children }) {
   const [isOpen, setIsOpen] = useState(true);
-
   return (
     <div className="box">
       <button className="btn-toggle" onClick={() => setIsOpen((o) => !o)}>
@@ -277,7 +264,12 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
       setIsLoading(true);
       const res = await fetch(`${API_URL}/movies/${selectedId}`);
       const data = await res.json();
-      setMovie(data);
+      setMovie({
+        ...data,
+        poster: data.poster
+          ? `https://image.tmdb.org/t/p/w500${data.poster}`
+          : "/placeholder.png",
+      });
       setIsLoading(false);
     }
     getMovieDetails();
@@ -378,7 +370,7 @@ function WatchedMoviesList({ watched, onDeleteWatched }) {
 
           return (
             <li key={entry.id}>
-              <img src={poster} alt={`${title} poster`} />
+              <img src={poster || "/placeholder.png"} alt={`${title} poster`} />
               <h3>{title}</h3>
               <div>
                 <p>
