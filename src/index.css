@@ -298,3 +298,10 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(238, 9, 121, 0.5);
 }
+
+.watched-poster {
+  width: 80px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 4px;
+}

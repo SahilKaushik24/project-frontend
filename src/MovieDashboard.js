@@ -38,15 +38,12 @@ export default function MovieDashboard() {
     fetchWatched();
   }, []);
 
-  function handleSelectMovie(id) {
+  const handleSelectMovie = (id) =>
     setSelectedId((prev) => (id === prev ? null : id));
-  }
 
-  function handleCloseMovie() {
-    setSelectedId(null);
-  }
+  const handleCloseMovie = () => setSelectedId(null);
 
-  async function handleAddWatched({ id, userRating }) {
+  const handleAddWatched = async ({ id, userRating }) => {
     try {
       const token = localStorage.getItem("token");
 
@@ -65,9 +62,9 @@ export default function MovieDashboard() {
     } catch (err) {
       console.error("Error adding watched movie:", err);
     }
-  }
+  };
 
-  async function handleDeleteWatched(watchedId) {
+  const handleDeleteWatched = async (watchedId) => {
     try {
       const token = localStorage.getItem("token");
 
@@ -77,13 +74,12 @@ export default function MovieDashboard() {
       });
 
       if (!res.ok) throw new Error("Failed to delete watched movie");
-
       setWatched((prev) => prev.filter((m) => m.id !== watchedId));
     } catch (err) {
       console.error("Error deleting watched movie:", err);
       alert("Error deleting movie from watched list.");
     }
-  }
+  };
 
   return (
     <>
@@ -123,6 +119,8 @@ export default function MovieDashboard() {
     </>
   );
 }
+
+// ---------------- Helper Components ----------------
 
 function Loader() {
   return <p className="loader">Loading...</p>;
@@ -178,7 +176,7 @@ function Search({ query, setQuery }) {
 function LogoutButton() {
   const navigate = useNavigate();
   const handleLogout = () => {
-    localStorage.removeItem("user");
+    localStorage.removeItem("token");
     navigate("/login");
   };
   return (
@@ -222,35 +220,22 @@ function Movie({ movie, onSelectMovie }) {
         alt={`${movie.title} poster`}
       />
       <h3>{movie.title}</h3>
-      <div>
-        <p>
-          <span>🗓</span>
-          <span>{movie.releaseYear}</span>
-        </p>
-      </div>
     </li>
   );
 }
 
-function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
+function MovieDetails({ selectedId, onCloseMovie, onAddWatched }) {
   const [movie, setMovie] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [userRating, setUserRating] = useState("");
-
   const countRef = useRef(0);
+
   useEffect(() => {
     if (userRating) countRef.current++;
   }, [userRating]);
 
-  const {
-    title,
-    releaseYear,
-    poster,
-    rating,
-    overview,
-    director,
-    movieGenres,
-  } = movie;
+  const { title, poster, director, movieGenres, description, imdbRating } =
+    movie;
 
   function handleAdd() {
     onAddWatched({ id: selectedId, userRating });
@@ -264,12 +249,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
       setIsLoading(true);
       const res = await fetch(`${API_URL}/movies/${selectedId}`);
       const data = await res.json();
-      setMovie({
-        ...data,
-        poster: data.poster
-          ? `https://image.tmdb.org/t/p/w500${data.poster}`
-          : "/placeholder.png",
-      });
+      setMovie({ ...data, poster: data.poster || "/placeholder.png" }); // ✅ fixed
       setIsLoading(false);
     }
     getMovieDetails();
@@ -294,16 +274,16 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
               &larr;
             </button>
             <img
-              src={poster || "/placeholder.png"}
+              src={poster}
               alt={`Poster of ${title} movie`}
+              className="movie-poster"
             />
             <div className="details-overview">
               <h2>{title}</h2>
-              <p>{releaseYear}</p>
-              <p>{movieGenres?.map((g) => g.genre.name).join(", ")}</p>
+              <p>{movieGenres?.map((g) => g.name).join(", ")}</p>
               <p>
                 <span>⭐️</span>
-                {rating} rating
+                {imdbRating || "N/A"} rating
               </p>
             </div>
           </header>
@@ -322,7 +302,7 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
               )}
             </div>
             <p>
-              <em>{overview}</em>
+              <em>{description}</em>
             </p>
             <p>Directed by {director}</p>
           </section>
@@ -333,7 +313,9 @@ function MovieDetails({ selectedId, onCloseMovie, onAddWatched, watched }) {
 }
 
 function WatchedSummary({ watched }) {
-  const avgBackendRating = average(watched.map((m) => m.movie?.rating || 0));
+  const avgBackendRating = average(
+    watched.map((m) => m.movie?.imdbRating || 0)
+  );
   const avgUserRating = average(watched.map((m) => m.rating || 0));
 
   return (
@@ -365,12 +347,16 @@ function WatchedMoviesList({ watched, onDeleteWatched }) {
         .map((entry) => {
           const poster = entry.movie?.poster || "/placeholder.png";
           const title = entry.movie?.title || "Untitled";
-          const backendRating = entry.movie?.rating || 0;
+          const backendRating = entry.movie?.imdbRating || 0;
           const userRating = entry.rating || 0;
 
           return (
             <li key={entry.id}>
-              <img src={poster || "/placeholder.png"} alt={`${title} poster`} />
+              <img
+                src={poster}
+                className="watched-poster"
+                alt={`${title} poster`}
+              />
               <h3>{title}</h3>
               <div>
                 <p>
