@@ -8,12 +8,14 @@ export default function LoginPage() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  const API_URL = "https://movie-tracker-backend-4-s1hc.onrender.com";
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError(null);
 
     try {
-      const response = await fetch("http://localhost:5000/auth/login", {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -26,7 +28,7 @@ export default function LoginPage() {
       }
 
       localStorage.setItem("token", data.token);
-      navigate("/dashboard"); // after login, go to dashboard
+      navigate("/dashboard");
     } catch (err) {
       setError(err.message);
     }

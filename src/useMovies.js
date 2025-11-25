@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 
+const API_URL = "https://movie-tracker-backend-4-s1hc.onrender.com";
+
 export function useMovies(query, page = 1, limit = 20) {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -13,7 +15,7 @@ export function useMovies(query, page = 1, limit = 20) {
       try {
         setIsLoading(true);
         setError("");
-        let url = `http://localhost:5000/movies?page=${page}&limit=${limit}`;
+        let url = `${API_URL}/movies?page=${page}&limit=${limit}`;
         if (query) url += `&title=${encodeURIComponent(query)}`;
 
         const res = await fetch(url, { signal: controller.signal });
