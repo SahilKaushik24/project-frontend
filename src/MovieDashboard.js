@@ -4,7 +4,7 @@ import { useKey } from "./useKey";
 import { useMovies } from "./useMovies";
 import { useNavigate } from "react-router-dom";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://movie-tracker-backend-3.onrender.com";
 
 const average = (arr) =>
   arr.length ? arr.reduce((acc, cur) => acc + cur, 0) / arr.length : 0;
